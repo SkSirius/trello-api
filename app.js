@@ -50,16 +50,52 @@ angular.module('trelloApp', [])
             }
         };
         
+        
+        
+        $scope.dateDiff = function(a, b) {
+            var date1 = a;
+            var date2 = b;
+
+            var diff = date2.getTime() - date1.getTime();
+
+            var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            diff -=  days * (1000 * 60 * 60 * 24);
+
+            var hours = Math.floor(diff / (1000 * 60 * 60));
+            diff -= hours * (1000 * 60 * 60);
+
+            var mins = Math.floor(diff / (1000 * 60));
+            diff -= mins * (1000 * 60);
+
+            var seconds = Math.floor(diff / (1000));
+            diff -= seconds * (1000);
+
+            var result = "";
+            
+            if(days > 0) result += days + " day(s), "; 
+            if(hours > 0) result += hours + " hour(s), ";
+            if(mins > 0) result += mins + " minute(s), ";
+            result += seconds + " seconds";  
+            
+            return result;
+        }
+        
         $scope.onGetCardsActions = function(card) {
             return function(actions) {
-                card.dateCreated =  new Date(1000*parseInt(card.id.substring(0,8),16)).toDateString(); 
+                var createdDate = new Date(1000*parseInt(card.id.substring(0,8),16));
+                card.dateCreated =  createdDate.toDateString(); 
                 card.dateResolved = new Date();
                 for(var i = actions.length - 1; i >=0; i--) {
                     if(actions[i].data.listAfter.name === "Resolved") {
-                        card.dateResolved = new Date(actions[i].date).toDateString();
+                        var resolvedDate = new Date(actions[i].date);
+                        card.dateResolved = resolvedDate.toDateString();
+                        
+                        card.resolveTime = $scope.dateDiff(createdDate, resolvedDate);
                         break;
                     }
                 }
+                
+               
             }
         };
         
