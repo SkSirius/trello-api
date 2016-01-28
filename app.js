@@ -1,27 +1,43 @@
 angular.module('trelloApp', [])
   .controller('trelloCtrl', [ "$scope", function($scope) {
-        $scope.listId = '53970114999c7fbf957553f6';
+        $scope.listId = '';
+        $scope.boardId = '539700d34fe4ae99ee15e84f';
         $scope.isLoading = true;
+        $scope.boardList = [];
         $scope.cardList = [];
         $scope.displayList = [];
         $scope.filter = { pageIndex: 0, pageSize: 20 };
+        $scope.selectedItem = {};
+        $scope.foundResolved = false;
+        $scope.columnText = 'Active Time';
         
         $scope.authenticationSuccess = function(result) {
             console.log('Successful authentication');
-        
-            Trello.get("lists/" + $scope.listId + "/cards/open", function(response) {
-                $scope.cardList = response;
-                $scope.loadCardsData();
-            });    
+            Trello.get('boards/' + $scope.boardId + '?lists=all', $scope.onBoardsLoad());
         };
         
         $scope.authenticationFailure = function() { alert('Authentication failed'); console.log('Failed authentication'); };
+        
+        $scope.onBoardsLoad = function() {
+            return function(response) {
+                $scope.boardList = response.lists;
+                $scope.listId = $scope.boardList[0].id;
+                $scope.selectedItem = $scope.boardList[0];
+                
+                Trello.get("lists/" + $scope.listId + "/cards/open", function(response) {
+                    $scope.cardList = response;
+                    $scope.loadCardsData();
+                });    
+            }
+        }
         
         $scope.loadCardsData = function() {
             $scope.isLoading = true;
             
             var startCount = $scope.filter.pageIndex * $scope.filter.pageSize;
             var endCount = ($scope.filter.pageIndex + 1) * $scope.filter.pageSize;
+            endCount = $scope.cardList.length > endCount ? endCount : $scope.cardList.length;
+            
             for(var i = startCount; i < endCount; i++) {
                 $scope.displayList.push($scope.cardList[i]);
                 var cardItem = $scope.cardList[i];
@@ -86,18 +102,39 @@ angular.module('trelloApp', [])
                 card.dateCreated =  createdDate.toDateString(); 
                 card.dateResolved = new Date();
                 for(var i = actions.length - 1; i >=0; i--) {
-                    if(actions[i].data.listAfter.name === "Resolved") {
+                    if(actions[i].data.listAfter.name.toLowerCase().indexOf("resolved") > -1) {
                         var resolvedDate = new Date(actions[i].date);
                         card.dateResolved = resolvedDate.toDateString();
                         
                         card.resolveTime = $scope.dateDiff(createdDate, resolvedDate);
+                        $scope.foundResolved = true;
+                        $scope.columnText = "Resolved Time";
                         break;
                     }
                 }
                 
-               
+                if(!$scope.foundResolved) {
+                    $scope.columnText = 'Time Active';
+                    card.resolveTime = $scope.dateDiff(createdDate, new Date());
+                    card.dateResolved = '';
+                }
             }
         };
+        
+        $scope.loadNewList = function() {
+            $scope.cardList = [];
+            $scope.displayList = [];
+            $scope.filter = { pageIndex: 0, pageSize: 20 };
+            $scope.foundResolved = false;
+            
+            $scope.isLoading = true;
+            
+            Trello.get("lists/" + $scope.selectedItem.id + "/cards/open", function(response) {
+                $scope.isLoading = false;
+                $scope.cardList = response;
+                $scope.loadCardsData();
+            }); 
+        }
         
         $scope.onGetCheckListInfo = function(card) {
             return function(list) {
