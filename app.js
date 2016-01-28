@@ -82,7 +82,10 @@ angular.module('trelloApp', [])
             }
             
             $scope.isLoading = false; 
-            setTimeout(function() { $scope.exportReady = true; $scope.$apply(); }, 3000);
+            setTimeout(function() { 
+                $scope.exportReady = true; 
+                $scope.$apply(); 
+            }, 5000);
         }
         
         $scope.onGetCardInfo = function(card) {
@@ -151,14 +154,16 @@ angular.module('trelloApp', [])
             $scope.displayList = [];
             $scope.filter = { pageIndex: 0, pageSize: 20 };
             $scope.foundResolved = false;
-            
+            $scope.exportReady = false;
             $scope.isLoading = true;
             
             Trello.get("lists/" + $scope.selectedItem.id + "/cards/open", function(response) {
                 $scope.isLoading = false;
                 $scope.cardList = response;
                 $scope.loadCardsData();
-            }); 
+            });
+            
+            $scope.loadAllIntoHidden();
         }
         
         $scope.onGetCheckListInfo = function(card) {
