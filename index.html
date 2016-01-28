@@ -20,8 +20,11 @@
                 <label> Total Count: {{ cardList.length }} </label>
             </div>
             <div class='col-md-3' style='margin-bottom: 20px;'>
-                <a class='btn btn-default' download="cardlist.xls" href="#" onclick="return ExcellentExport.excel(this, 'datatable', 'Sheet Name Here');">Export to Excel</a>
-                <a class='btn btn-default' download="cardlist.csv" href="#" onclick="return ExcellentExport.csv(this, 'datatable');">Export to CSV</a>
+                <div ng-show='exportReady'>
+                    <a class='btn btn-default' download="cardlist.xls" href="#" onclick="return ExcellentExport.excel(this, 'datatable-hidden', 'Sheet Name Here');">Export to Excel</a>
+                    <a class='btn btn-default' download="cardlist.csv" href="#" onclick="return ExcellentExport.csv(this, 'datatable-hidden');">Export to CSV</a>
+                </div>
+                <div ng-show='!exportReady'>Preparing export...</div>
             </div>
         </div>
         <table id='datatable' class='table table-striped table-bordered'>
@@ -76,6 +79,55 @@
                 <button ng-click='loadMore()' class='btn btn-primary' id='btnMore'>Show More</button>
             </div>
         </div> 
+        
+        <div style='display:none;'>
+            <table id='datatable-hidden' class='table table-striped table-bordered'>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Due Date</th>
+                    <th>Checklists</th>
+                    <th>Members</th>
+                    <th>Labels</th>
+                    <th>Votes</th>
+                    <th>Date created</th>
+                    <th ng-show='foundResolved'>Moved to resolved</th>
+                    <th>{{ columnText }}</th>
+                </tr>
+            </thead>
+            <tbody>
+               
+                <tr ng-repeat='item in cardList'>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.desc }}</td>
+                    <td>{{ item.due }}</td>
+                    <td>
+                        <div ng-repeat='chkList in item.checkLists'>
+                            {{ chkList.name }}</br>
+                            <ul ng-repeat='chkItem in chkList.checkItems'>
+                               <li>Name: {{ chkItem.name }} - State: {{ chkItem.state }}</li>
+                            </ul>
+                        </div>
+                    </td>
+                    <td>
+                        <div ng-repeat='member in item.memberList'>
+                            {{ member.username }}</br>
+                        </div>
+                    </td>
+                    <td>
+                        <label class='bck' ng-class='getLabelClass(label.color)' ng-repeat='label in item.labels'>
+                            {{label.name}}
+                        </label>
+                    </td>
+                    <td>{{ item.badges.votes }}</td>
+                    <td>{{ item.dateCreated }}</td>
+                    <td ng-show='foundResolved'>{{ item.dateResolved }}</td>
+                    <td>{{ item.resolveTime }}</td>
+                </tr>
+            </tbody>
+        </table>
+        </div>
         
         <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.0-rc.1/angular.min.js"></script>
         <script src='https://code.jquery.com/jquery-1.12.0.min.js'></script>

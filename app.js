@@ -10,6 +10,7 @@ angular.module('trelloApp', [])
         $scope.selectedItem = {};
         $scope.foundResolved = false;
         $scope.columnText = 'Active Time';
+        $scope.exportReady = false;
         
         $scope.authenticationSuccess = function(result) {
             console.log('Successful authentication');
@@ -27,6 +28,8 @@ angular.module('trelloApp', [])
                 Trello.get("lists/" + $scope.listId + "/cards/open", function(response) {
                     $scope.cardList = response;
                     $scope.loadCardsData();
+                    
+                    $scope.loadAllIntoHidden();
                 });    
             }
         }
@@ -59,6 +62,28 @@ angular.module('trelloApp', [])
             setTimeout(function() { $scope.$apply(); }, 3000);
            
         };
+        
+        $scope.loadAllIntoHidden = function() {
+            $scope.exportReady = false;
+            for(var i = 0; i < $scope.cardList.length; i++) {
+                var cardItem = $scope.cardList[i];
+                
+                Trello.cards.get(cardItem.id, $scope.onGetCardInfo(cardItem));
+                
+                cardItem.checkLists = [];
+                for(var j = 0; j < cardItem.idChecklists.length; j++) {
+                    Trello.checklists.get(cardItem.idChecklists[j], $scope.onGetCheckListInfo(cardItem));
+                }
+                
+                cardItem.memberList = [];
+                for(var m = 0; m < cardItem.idMembers.length; m++) {
+                    Trello.members.get(cardItem.idMembers[m], $scope.onGetMemberInfo(cardItem));
+                }
+            }
+            
+            $scope.isLoading = false; 
+            setTimeout(function() { $scope.exportReady = true; $scope.$apply(); }, 3000);
+        }
         
         $scope.onGetCardInfo = function(card) {
             return function(response) {
