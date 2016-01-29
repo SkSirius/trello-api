@@ -13,6 +13,10 @@
     <body ng-controller='trelloCtrl'>
         <div style='padding: 10px'>
             <div class='col-md-3' style='padding-top:8px;'>
+                <select ng-change='loadNewBoards()' ng-model="selectedBoard" ng-selected="selectedBoard" ng-options="item.name for item in orgBoards"">
+                </select>
+            </div>
+            <div class='col-md-3' style='padding-top:8px;'>
                 <select ng-change='loadNewList()' ng-model="selectedItem" ng-selected="selectedItem" ng-options="item.name for item in boardList"">
                 </select>
             </div>
@@ -49,7 +53,7 @@
                     <td>{{ item.desc }}</td>
                     <td>{{ item.due }}</td>
                     <td>
-                        <div ng-repeat='chkList in item.checkLists'>
+                        <div ng-repeat='chkList in item.checklists'>
                             {{ chkList.name }}</br>
                             <ul ng-repeat='chkItem in chkList.checkItems'>
                                <li>Name: {{ chkItem.name }} - State: {{ chkItem.state }}</li>
@@ -57,7 +61,7 @@
                         </div>
                     </td>
                     <td>
-                        <div ng-repeat='member in item.memberList'>
+                        <div ng-repeat='member in item.members'>
                             {{ member.username }}</br>
                         </div>
                     </td>
@@ -77,6 +81,7 @@
             <label ng-show='isLoading'>Loading...</label>
             <div ng-show='!isLoading'>
                 <button ng-click='loadMore()' class='btn btn-primary' id='btnMore'>Show More</button>
+                <button ng-click='refresh()' class='btn btn-default'> Refresh </button>
             </div>
         </div> 
         
