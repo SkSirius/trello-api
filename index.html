@@ -108,7 +108,7 @@
                     <td>{{ item.desc }}</td>
                     <td>{{ item.due }}</td>
                     <td>
-                        <div ng-repeat='chkList in item.checkLists'>
+                        <div ng-repeat='chkList in item.checklists'>
                             {{ chkList.name }}</br>
                             <ul ng-repeat='chkItem in chkList.checkItems'>
                                <li>Name: {{ chkItem.name }} - State: {{ chkItem.state }}</li>
@@ -116,7 +116,7 @@
                         </div>
                     </td>
                     <td>
-                        <div ng-repeat='member in item.memberList'>
+                        <div ng-repeat='member in item.members'>
                             {{ member.username }}</br>
                         </div>
                     </td>

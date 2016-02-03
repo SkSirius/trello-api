@@ -93,6 +93,8 @@ angular.module('trelloApp', [])
             var createdDate = new Date(1000*parseInt(card.id.substring(0,8),16));
             card.dateCreated =  createdDate.toDateString(); 
             card.dateResolved = new Date();
+            if(card.due)
+                card.due = new Date(card.due).toDateString();
             
             var actions = card.actions;
             
