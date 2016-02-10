@@ -5,9 +5,14 @@ angular.module('trelloApp', [])
         $scope.orgBoards = [];
         $scope.boardList = [];
         $scope.cardList = [];
+        $scope.allList = [];
         $scope.displayList = [];
+        $scope.memberList = [];
+        $scope.labelList = [];
         $scope.filter = { pageIndex: 0, pageSize: 20 };
         $scope.selectedItem = {};
+        $scope.selectedMember = {};
+        $scope.selectedLabel = {};
         $scope.selectedBoard = {};
         $scope.foundResolved = false;
         $scope.columnText = 'Active Time';
@@ -44,8 +49,9 @@ angular.module('trelloApp', [])
         };
         
         $scope.loadCards = function() {
-            Trello.get("lists/" + $scope.selectedItem.id + "/cards?&fields=badges,desc,due,labels,name&members=true&checklists=all&member_fields=username&limit=1000&filter=open&actions=updateCard:idList", function(response) {
+            Trello.get("lists/" + $scope.selectedItem.id + "/cards?&fields=badges,labels,name&members=true&checklists=all&member_fields=username&limit=1000&filter=open&actions=commentCard,updateCard:idList", function(response) {
                 $scope.cardList = response;
+                $scope.allList = response;
                 $scope.loadCardsData();
                 
                 if($scope.selectedItem.name.toLowerCase().indexOf("resolved") > -1) {
@@ -82,29 +88,91 @@ angular.module('trelloApp', [])
         $scope.loadAllIntoHidden = function() {
             $scope.exportReady = false;
             
+            $scope.labelList = [];
+            $scope.labelList.push('None');
+            $scope.memberList = [];
+            $scope.memberList.push('None');
+            
             for(var i = 0; i < $scope.cardList.length; i++) {
                 $scope.onGetCardsActions($scope.cardList[i]);
+                
+                $scope.labelFilter($scope.cardList[i].labels);
+                $scope.memberFilter($scope.cardList[i].members);
             }
             
             $scope.exportReady = true;
         };
         
+        $scope.labelFilter = function(labels) {
+            for(var i = 0; i < labels.length; i++) {
+                if($scope.labelList.indexOf(labels[i].name) == -1) {
+                    $scope.labelList.push(labels[i].name);
+                }
+            }
+        };
+        
+        $scope.memberFilter = function(members) {
+            for(var i = 0; i < members.length; i++) {
+                if($scope.memberList.indexOf(members[i].username) == -1) {
+                    $scope.memberList.push(members[i].username);
+                }
+            }
+        };
+        
+        $scope.filteredList = function(num) {
+            var member = $scope.selectedMember;
+            var label = $scope.selectedLabel;
+            
+            var tempList = $scope.allList;
+            if(typeof member === 'string' && member != "None") {
+                tempList = _.filter(tempList, function(item) {
+                    for(var i = 0; i < item.members.length; i++) {
+                        if(item.members[i].username === member) {
+                            return true;
+                        }
+                    }
+                });
+            }
+            
+            if(typeof label === 'string' && label != "None") {
+                tempList = _.filter(tempList, function(item) {
+                    for(var i = 0; i < item.labels.length; i++) {
+                        if(item.labels[i].name === label) {
+                            return true;
+                        }
+                    }
+                });
+            }
+            
+            $scope.displayList = [];
+            $scope.cardList = tempList;
+            var length = $scope.cardList.length > 20 ? 20 : $scope.cardList.length;
+            
+            for(var i = 0; i < length; i++) {
+                $scope.displayList.push($scope.cardList[i]);
+            }
+        }
+        
         $scope.onGetCardsActions = function(card) {
             var createdDate = new Date(1000*parseInt(card.id.substring(0,8),16));
-            card.dateCreated =  createdDate.toDateString(); 
+            card.dateCreated =  createdDate; 
             card.dateResolved = new Date();
-            if(card.due)
-                card.due = new Date(card.due).toDateString();
+            card.commentList = [];
             
             var actions = card.actions;
             
             for(var i = actions.length - 1; i >=0; i--) {
-                if(actions[i].data.listAfter.name.toLowerCase().indexOf("resolved") > -1) {
-                    var resolvedDate = new Date(actions[i].date);
-                    card.dateResolved = resolvedDate.toDateString();
-                    
-                    card.resolveTime = $scope.dateDiff(createdDate, resolvedDate);
-                    break;
+                
+                if(actions[i].type === "updateCard") {
+                    if(actions[i].data.listAfter.name.toLowerCase().indexOf("resolved") > -1) {
+                        var resolvedDate = new Date(actions[i].date);
+                        card.dateResolved = resolvedDate.toDateString();
+                        
+                        card.resolveTime = $scope.dateDiff(createdDate, resolvedDate);
+                        break;
+                    }
+                } else {
+                    card.commentList.push( actions[i].memberCreator.fullName + ": " + actions[i].data.text);
                 }
             }
             
