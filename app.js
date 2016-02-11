@@ -166,7 +166,7 @@ angular.module('trelloApp', [])
                 if(actions[i].type === "updateCard") {
                     if(actions[i].data.listAfter.name.toLowerCase().indexOf("resolved") > -1) {
                         var resolvedDate = new Date(actions[i].date);
-                        card.dateResolved = resolvedDate.toDateString();
+                        card.dateResolved = resolvedDate;
                         
                         card.resolveTime = $scope.dateDiff(createdDate, resolvedDate);
                         break;
@@ -228,6 +228,9 @@ angular.module('trelloApp', [])
             
             return result;
         };
+    
+    
+   
     
         Trello.authorize({
             type: 'popup',
