@@ -73,8 +73,8 @@
                             {{label.name}}
                         </label>
                     </td>
-                    <td>{{ item.dateCreated | date:"dd/MM/yyyy hh:mm:ss" }}</td>
-                    <td ng-show='foundResolved'>{{ item.dateResolved | date:"dd/MM/yyyy hh:mm:ss" }}</td>
+                    <td>{{ item.dateCreated | date:"dd/MM/yyyy HH:mm:ss" }}</td>
+                    <td ng-show='foundResolved'>{{ item.dateResolved | date:"dd/MM/yyyy HH:mm:ss" }}</td>
                     <td>{{ item.resolveTime }}</td>
                     <td>
                         <div ng-repeat="comment in item.commentList">
@@ -118,8 +118,8 @@
                             {{label.name}}
                         </label>
                     </td>
-                    <td>{{ item.dateCreated | date:"dd/MM/yyyy hh:mm:ss" }}</td>
-                    <td ng-show='foundResolved'>{{ item.dateResolved }}</td>
+                    <td>{{ item.dateCreated | date:"dd/MM/yyyy HH:mm:ss" }}</td>
+                    <td ng-show='foundResolved'>{{ item.dateResolved | date:"dd/MM/yyyy HH:mm:ss" }}</td>
                     <td>{{ item.resolveTime }}</td>
                     <td>
                         <div ng-repeat="comment in item.commentList">
